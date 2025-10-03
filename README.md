@@ -3,8 +3,10 @@
 ## Why we’re doing this demo — the problems we want to solve
 
 
-### Current
-![MCP Gateway Architecture](docs/images/mcp-gateway-architecture.png)
+### The Gateway Model
+[https://www.solo.io/blog/mcp-authorization-is-a-non-starter-for-enterprise](https://www.solo.io/blog/mcp-authorization-is-a-non-starter-for-enterprise)
+
+<p align="center"><img src="docs/images/gateway-model.png" alt="MCP Gateway Policy Model" width="400"></a></p>
 
 ### Uncontrolled tool access
   - Today, if an AI agent or user gets access through a service account, it can usually call any Kubernetes API the account is allowed.
@@ -14,7 +16,7 @@
   - When an agent runs with a shared service account, Kubernetes only sees “serviceaccount:agent” in audit logs.
   - We can’t tell if it was Alice or Bob who triggered a risky action — the identity of the actual human is lost.
 
-###  Namespace & tenant isolation\
+###  Namespace & tenant isolation
   - Developers should only manage workloads in their namespace (e.g., dev-team).
   - Without proper enforcement, an agent could accidentally create or modify resources in the wrong tenant’s space.
 
@@ -37,6 +39,18 @@
 - Result: the AI agent or UI can only do what the actual user is allowed to do, in the right namespace, with safe defaults.
 
 👉 This way, we’re solving: least privilege, per-user auditing, tenant isolation, and safe guardrails — while still letting developers interact with Kubernetes through more user-friendly interfaces.
+
+## What we're implementing
+
+<p align="center"><img src="docs/images/demo-schema.png" alt="demo schema" width="400"></a></p>
+
+### Tools used
+- Kind
+- kyverno-envoy-plugin
+- Agentgateway + Kgateway
+- Keycloak
+- Kubernetes RBACs
+
 
 ## Possible improvements / things left to do
 
