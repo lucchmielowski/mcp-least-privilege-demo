@@ -1,0 +1,19 @@
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: GatewayExtension
+metadata:
+  namespace: kgateway-system
+  name: kyverno-authz-server
+  labels:
+    app: agentgateway-kyverno
+spec:
+  type: ExtAuth
+  extAuth:
+    grpcService:
+      backendRef:
+        name: kyverno-authz-server
+        namespace: kyverno
+        port: 9081
+    withRequestBody:
+      maxRequestBytes: 1024
+      allowPartialMessage: false
+      packAsBytes: false

@@ -1,0 +1,47 @@
+.terraform.tfstate
+.terraform.tfstate.backup
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+
+# SSL and certificate files
+.ssl/
+*.pem
+*.key
+*.csr
+*.srl
+
+# Kubernetes configs
+kubeconfig
+*.kubeconfig
+
+# Helm
+*.tgz
+.chart-testing/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Misc
+*.bak
+*.tmp
+*.backup

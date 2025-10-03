@@ -1,0 +1,15 @@
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: TrafficPolicy
+metadata:
+  namespace: kgateway-system
+  name: kyverno-authz-server
+  labels:
+    app: agentgateway-kyverno
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway
+  extAuth:
+    extensionRef:
+      name: kyverno-authz-server

@@ -1,0 +1,26 @@
+apiVersion: policies.kyverno.io/v1alpha1
+kind: ValidatingPolicy
+metadata:
+  name: policy
+spec:
+  evaluation:
+    mode: Envoy
+  variables:
+    - name: mcpBody
+      expression: json.Unmarshal(object.attributes.request.http.body)
+    - name: jwks
+      expression: jwks.Fetch("http://keycloak.keycloak.svc.cluster.local/realms/master/protocol/openid-connect/certs")
+    - name: jwtString
+      expression: object.attributes.request.http.headers.authorization.split(" ")[1]
+    - name: decodedJwt
+      expression: jwt.Decode(variables.jwtString, variables.jwks)
+    - name: tenant
+      expression: variables.decodedJwt.Claims["tenant"]
+    - name: namespaceExists
+      expression: dyn(resource.List("v1", "namespaces", "").items).exists(i, i.metadata.name == variables.mcpBody.params.arguments.namespace)
+  #   - name: isGetResourcesCall
+  #     expression: json(object.attributes.request.http.body)[?'method'] == "tools/calls" && json(object.attributes.request.http.body).params.name == "k8s_get_resources"
+  validations:
+  # Check that the tenant has access to the namespace
+  - expression: |
+      variables.namespaceExists && variables.tenant == variables.mcpBody.params.arguments.namespace ? envoy.Allowed().Response() : envoy.Denied(403).Response()

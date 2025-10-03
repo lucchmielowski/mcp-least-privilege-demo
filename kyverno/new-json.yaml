@@ -1,0 +1,14 @@
+apiVersion: policies.kyverno.io/v1alpha1
+kind: ValidatingPolicy
+metadata:
+  name: json-policy
+spec:
+  evaluation:
+    mode: Envoy
+  variables:
+    - name: mcpBody
+      expression: json.Unmarshal(object.attributes.request.http.body)
+  validations:
+  # Check that the tenant has access to the namespace
+  - expression: |
+      variables.mcpBody.params.name == "k8s_get_resources" ? envoy.Allowed().Response() : envoy.Denied(403).Response()

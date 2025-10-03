@@ -1,0 +1,43 @@
+apiVersion: policies.kyverno.io/v1alpha1
+kind: ValidatingPolicy
+metadata:
+  name: restrict-mcp-label-update
+spec:
+  evaluation:
+    mode: Envoy
+  variables:
+    - name: body
+      expression: json.Unmarshal(object.attributes.request.http.body)
+    - name: jwks
+      expression: jwks.Fetch("http://keycloak.keycloak.svc.cluster.local/realms/master/protocol/openid-connect/certs")
+    - name: jwtString
+      expression: object.attributes.request.http.headers["authorization"].split(" ")[1]
+    - name: decodedJwt
+      expression: jwt.Decode(variables.jwtString, variables.jwks)
+    - name: res
+      expression: >-
+        {
+          "kind": dyn("SubjectAccessReview"),
+          "apiVersion": dyn("authorization.k8s.io/v1"),
+          "spec": dyn({
+            "resourceAttributes": dyn({
+              "group": "apps",
+              "resource": string(variables.body.params.arguments.resource_type),
+              "namespace": string(variables.body.params.arguments.namespace),
+              "verb": "patch"
+            }),
+            "user": dyn(variables.decodedJwt.Claims["email"]),
+            "groups": dyn(variables.decodedJwt.Claims["groups"])
+          })
+        }
+    - name: sar
+      expression: >-
+        resource.Post("authorization.k8s.io/v1", "subjectaccessreviews", variables.res)
+  matchConditions:
+  - expression: |
+      has(json.Unmarshal(object.attributes.request.http.body).params) 
+        && json.Unmarshal(object.attributes.request.http.body).params.name == "k8s_label_resource"
+    name: isToolsCall
+  validations:
+  - expression: |
+      has(variables.sar.status) && variables.sar.status.allowed == true ? envoy.Allowed().Response() : envoy.Denied(403).Response()

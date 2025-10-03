@@ -1,0 +1,22 @@
+# TODO: add a list of namespaces that are allowed to be used with MCP
+apiVersion: policies.kyverno.io/v1alpha1
+kind: ValidatingPolicy
+metadata:
+  name: opt-in-mcp-namespaces
+spec:
+  evaluation:
+    mode: Envoy
+  variables:
+    - name: body
+      expression: json.Unmarshal(object.attributes.request.http.body)
+    - name: isAllowedNamespace
+      expression: has(variables.body.params.arguments) && string(variables.body.params.arguments.namespace) in ["default", "dev-team", "test"]
+    - name: namespaceExists
+      expression: dyn(resource.List("v1", "namespaces", "").items).exists(i, i.metadata.name == variables.body.params.arguments.namespace)
+  matchConditions:
+  - expression: |
+      json.Unmarshal(object.attributes.request.http.body).method == "tools/call"
+    name: isToolsCall
+  validations:
+  - expression: |
+      variables.namespaceExists && variables.isAllowedNamespace ? envoy.Allowed().Response() : envoy.Denied(403).Response()
