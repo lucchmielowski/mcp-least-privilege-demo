@@ -51,6 +51,10 @@
 - Keycloak
 - Kubernetes RBACs
 
+## Full demo
+
+The full demo is accessible in the following [script](./readthrough.md)
+
 
 ## Possible improvements / things left to do
 

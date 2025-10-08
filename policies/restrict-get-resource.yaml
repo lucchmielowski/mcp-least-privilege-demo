@@ -1,13 +1,15 @@
 apiVersion: policies.kyverno.io/v1alpha1
 kind: ValidatingPolicy
 metadata:
-  name: restrict-mcp-label-update
+  name: restrict-get-resource
 spec:
   evaluation:
     mode: Envoy
   variables:
     - name: body
       expression: json.Unmarshal(object.attributes.request.http.body)
+    - name: isAllowedNamespace
+      expression: has(variables.body.params.arguments) && string(variables.body.params.arguments.namespace) in ["default", "dev-team", "test"]
     - name: jwks
       expression: jwks.Fetch("http://keycloak.keycloak.svc.cluster.local/realms/master/protocol/openid-connect/certs")
     - name: jwtString
@@ -21,10 +23,10 @@ spec:
           "apiVersion": dyn("authorization.k8s.io/v1"),
           "spec": dyn({
             "resourceAttributes": dyn({
-              "group": "apps",
+              "group": "",
               "resource": string(variables.body.params.arguments.resource_type),
               "namespace": string(variables.body.params.arguments.namespace),
-              "verb": "patch"
+              "verb": "list"
             }),
             "user": dyn(variables.decodedJwt.Claims["email"]),
             "groups": dyn(variables.decodedJwt.Claims["groups"])
@@ -35,9 +37,14 @@ spec:
         resource.Post("authorization.k8s.io/v1", "subjectaccessreviews", variables.res)
   matchConditions:
   - expression: |
-      has(json.Unmarshal(object.attributes.request.http.body).params) 
-        && json.Unmarshal(object.attributes.request.http.body).params.name == "k8s_label_resource"
+      has(json.Unmarshal(object.attributes.request.http.body).method)
+        && json.Unmarshal(object.attributes.request.http.body).method == "tools/call"
+        && has(json.Unmarshal(object.attributes.request.http.body).params.name)
+        && json.Unmarshal(object.attributes.request.http.body).params.name == "k8s_get_resources"
     name: isToolsCall
   validations:
   - expression: |
-      has(variables.sar.status) && variables.sar.status.allowed == true ? envoy.Allowed().Response() : envoy.Denied(403).Response()
+      has(variables.body.params.arguments.all_namespaces)
+        && variables.body.params.arguments.all_namespaces == "false"
+        && has(variables.sar.status)
+        && variables.sar.status.allowed == true ? envoy.Allowed().Response() : envoy.Denied(403).Response()
