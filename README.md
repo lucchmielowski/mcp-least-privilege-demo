@@ -53,7 +53,7 @@
 
 ## Full demo
 
-The full demo is accessible in the following [script](./readthrough.md)
+The full demo is accessible in the following [script](./demo.md)
 
 
 ## Possible improvements / things left to do
