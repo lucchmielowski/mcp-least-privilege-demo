@@ -676,20 +676,11 @@ This architecture solves the key challenges of AI/LLM integration with Kubernete
 - Fine-grained control over AI-initiated actions
 - Enforcement of business policies beyond RBAC
 
-## Next Steps
-
-Consider these enhancements:
-
-1. **Add more granular policies**: Create policies for resource quotas, image restrictions, pod security standards
-2. **Implement rate limiting**: Prevent abuse by limiting request rates per user
-3. **Add metrics and monitoring**: Export authorization metrics to Prometheus
-4. **Create custom MCP tools**: Build domain-specific tools that wrap complex Kubernetes operations
-5. **Integrate with CI/CD**: Use this pattern for secure automated deployments
-6. **Extend to multiple clusters**: Use the same pattern across dev, staging, and production environments
 
 ## References
 
 - [MCP Authorization Blog Post](https://www.solo.io/blog/mcp-authorization-is-a-non-starter-for-enterprise)
+- [KGateway Documentation](https://kgateway.dev/docs/main/quickstart/)
 - [Kubernetes OIDC Authentication](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens)
 - [Kyverno Policies](https://kyverno.io/docs/)
 - [Gateway API](https://gateway-api.sigs.k8s.io/)
